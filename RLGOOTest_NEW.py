@@ -1,4 +1,6 @@
 import sys
+import logging
+import time
 from utils.Connection import *
 from utils.Utils import *
 from utils.PlanTree import *
@@ -23,6 +25,8 @@ from Plan_SQL_test import travesal_SQL
 import linecache
 from utils.Arguments import parser
 args = parser.parse_args()
+import torch
+from tqdm import tqdm
 
 
 EXECUTION_MAX_TIME = 90000
@@ -38,6 +42,7 @@ for file in sorted(os.listdir('./train_plan/index/')):
 USEABLE_FILE.sort()
 
 TEST_FILE = [84769, 87006, 55149, 25097, 64236, 98753, 48072, 6440, 27378, 48185, 92664, 16325, 84093, 75202, 68153, 55524, 5121, 83811, 47439, 20268, 92855, 44727, 101212, 84454, 28432, 34103, 37796, 40097, 11349, 22318, 99675, 44883, 11667, 54974, 47054, 28690, 13770, 458, 54393, 89689, 19780, 17207, 82217, 40672, 58875, 37306, 83340, 5392, 7751, 17681, 59265, 70580, 58643, 63722, 94566, 40259, 27291, 17928, 43320, 62387, 70075, 94054, 10893, 1081, 94931, 29891, 63817, 7591, 95293, 43924, 59149, 73094, 10154, 40180, 80204, 20916, 8101, 3117, 75034, 54907, 4641, 76214, 27851, 73197, 2580, 59027, 69446, 18021, 94306, 3882, 42324, 3538, 40466, 97383, 36002, 24201, 60625, 52101, 33716, 79841]
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def main():
@@ -100,12 +105,15 @@ def main():
     for epoch in range(args.epoch_start, args.epoch_end):
         # random.shuffle(d_list)
 
+        epoch_start_time = time.time()
         print('episode:', epoch)
+        logging.info(f"Epoch {epoch} started.")
+        print(f"Epoch {epoch} started.")
         # 初始化记录loss为空表格
         dqn.all_loss = []
         dqn.cur_epoch = epoch
 
-        for num, idx in enumerate(USEABLE_FILE):
+        for num, idx in enumerate(tqdm(USEABLE_FILE, file=sys.stdout)):
             if idx not in TEST_FILE:
                 # print(idx)
                 sql = linecache.getline('./train_plan/query_multi.sql', idx+1)
@@ -117,7 +125,6 @@ def main():
                 join_table = get_join_table(query_encode[2])
                 join_table = reverse_kv(query_encode[3], join_table)
                 query_encode = replace_alias(query_encode)
-
                 join_table = remove_same_table(join_table, 7)
                 now_tables = get_tables(query_encode)
                 query_vector = get_vector(query_encode)
@@ -191,8 +198,6 @@ def main():
                             dqn.buffer.add([reward, now_state, next_state, state])
 
 
-
-
                 # add optimal plan
                 if num % 5000 == 0:
                     sql = linecache.getline('./train_plan/query_multi.sql', idx + 1)
@@ -238,8 +243,15 @@ def main():
 
 
             if num % 10 == 0:
+                # Timer for dqn.learn()
                 dqn.learn()
+
         print('avergae loss:', sum(dqn.all_loss) / len(dqn.all_loss) if len(dqn.all_loss) != 0 else 0)
+ 
+        # Log the time taken for the epoch
+        epoch_time = time.time() - epoch_start_time
+        logging.info(f"Epoch {epoch} completed in {epoch_time:.2f} seconds.")
+        print(f"Epoch {epoch} completed in {epoch_time:.2f} seconds.")
 
         dqn.update_epsilon()
         conn.reconnect()

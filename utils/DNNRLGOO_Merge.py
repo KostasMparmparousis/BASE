@@ -8,7 +8,7 @@ import random
 import itertools
 from TreeConvolution.util_1 import prepare_trees
 from TreeConvolution.tcnn import left_child, right_child
-
+from torch.distributions import Categorical
 
 # DNN guided RL Model
 class DNNRLGOO(object):

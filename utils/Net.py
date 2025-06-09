@@ -7,6 +7,7 @@ import torch
 from collections import OrderedDict
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3"
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #init value network
 class Net:
@@ -24,7 +25,8 @@ class Net:
             tcnn.TreeLayerNorm(),
             tcnn.TreeActivation(nn.ReLU()),
             tcnn.DynamicPooling(),
-            tcnn.RegNorm(128)
+            # tcnn.RegNorm(128)
+            PolicyHead(128)
         )
         def init_weights(m):
             if type(m) == nn.Linear:
@@ -35,8 +37,7 @@ class Net:
         # for i in range(len(self.model)):
         #     print(self.model[i])
         # print(list(self.model.parameters()))
-        if torch.cuda.is_available():
-            self.model = self.model.cuda()
+        self.model = self.model.to(device)
 
         # self.optimizer = optim.SGD(self.model.parameters(), lr=0.00001, momentum=0.9)
         self.optimizer = optim.AdamW(self.model.parameters(), lr=learning_rate)
@@ -64,6 +65,24 @@ class Net:
         state = {'model': self.model.state_dict(), 'optimizer': self.optimizer.state_dict()}
         torch.save(state, self.path)
 
+class PolicyHead(nn.Module):
+    def __init__(self, input_size):
+        super().__init__()
+        self.hidden1 = nn.Linear(input_size, 128)
+        self.hidden2 = nn.Linear(128, 64)
+        self.hidden3 = nn.Linear(64, 32)
+        self.hidden4 = nn.Linear(32, 168)  # Matches Pi_net's output dimension
+        self.activation = nn.ReLU()
+        self.drop_layer = nn.Dropout(p=0.5)
+
+    def forward(self, x):
+        x = self.drop_layer(x)
+        x = self.activation(self.hidden1(x))
+        x = self.activation(self.hidden2(x))
+        x = self.drop_layer(x)
+        x = self.activation(self.hidden3(x))
+        x = self.hidden4(x)
+        return x
 
 class Net_latency(nn.Module):
     def __init__(self, path='./Models/now.pth', learning_rate=0.0008, steps_per_epoch=100, epoch=120, max_lr=0.001):
@@ -197,7 +216,7 @@ if __name__ == '__main__':
             tcnn.DynamicPooling_Min(),
             tcnn.RegNorm(128)
         )
-    checkpoint = torch.load('/data0/chenx/imdb_QO/Models/now.pth', map_location=torch.device('cpu'))
+    checkpoint = torch.load('/data/hdd1/users/kmparmp/BASE/Models/now.pth', map_location=torch.device('cpu'))
 
     # model_dict = model.state_dict()
     # # print(model_dict.keys())

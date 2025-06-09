@@ -14,7 +14,9 @@ class Conn:
         username = conf.get("postgre", "username")
         password = conf.get("postgre", "password")
         dbname = conf.get("postgre", "dbname")
-        self.conn = psycopg2.connect(database=dbname, user=username, password=password, host="localhost", port="5432")
+        host = conf.get("postgre", "host")
+        port = conf.get("postgre", "port")
+        self.conn = psycopg2.connect(database=dbname, user=username, password=password, host=host, port=port, client_encoding='utf-8')
         cursor = self.conn.cursor()
         cursor.execute("select * from pg_stats where schemaname = 'public';")
         self.stats = cursor.fetchall()
@@ -26,7 +28,9 @@ class Conn:
         username = conf.get("postgre", "username")
         password = conf.get("postgre", "password")
         dbname = conf.get("postgre", "dbname")
-        self.conn = psycopg2.connect(database=dbname, user=username, password=password, host="localhost", port="5432")
+        host = conf.get("postgre", "host")
+        port = conf.get("postgre", "port")
+        self.conn = psycopg2.connect(database=dbname, user=username, password=password, host=host, port=port, client_encoding='utf-8')
 
 
 class Connection:
@@ -49,7 +53,9 @@ class Connection:
         username = conf.get("postgre", "username")
         password = conf.get("postgre", "password")
         dbname = conf.get("postgre", "dbname")
-        conn = psycopg2.connect(database=dbname, user=username, password=password, host="localhost", port="5432")
+        host = conf.get("postgre", "host")
+        port = conf.get("postgre", "port")
+        conn = psycopg2.connect(database=dbname, user=username, password=password, host=host, port=port, client_encoding='utf-8')
         return conn
 
     @staticmethod
@@ -117,6 +123,7 @@ class Connection:
 conn = Conn()
 # conn = conn.conn
 all_attribute_name = Connection.get_all_attribute_name()
+print(all_attribute_name)
 # todo: get_all_table中表取多了
 all_tables = Connection.get_all_tables()
 all_tables_rows_num = Connection.get_all_tables_rows_num()

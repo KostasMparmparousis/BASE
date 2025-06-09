@@ -1960,7 +1960,6 @@ if __name__ == '__main__':
     policy_net.load_state_dict(cp['model'])
 
 
-
     discrim_net = Discrim_net()
 
     discrim_net.to(local_device)

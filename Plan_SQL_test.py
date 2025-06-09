@@ -192,7 +192,6 @@ def travesal_SQL(sql):
                             add_val(SQL_encode, t, att, _get_selectivity(SQL_encode[3][t], '.'.join(change)))
 
                     else:
-
                         one = one.value
 
                         t, att = one.split(' ')[0].split('.')
