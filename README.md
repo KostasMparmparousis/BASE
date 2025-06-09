@@ -6,6 +6,33 @@
    conda activate base
    ```
 
+## Training Guide
+
+1. Configure the path of your training workload in `train_base.py` (line 44):
+   ```python
+   sql_directory = "/your/path/here"  # Update this path to where you wish for the checkpoints to be saved
+   ```
+
+2. Run the training script:
+   ```bash
+   python3 train_base.py --path ./Models/now.pth --epoch_start 1 \
+   --epoch_end 100 --epsilon_decay 0.95 \--epsilon_end 0.02 --capacity 60000 \
+    --batch_size 512 --sync_batch_size 50 --steps_per_epoch 1000 \ 
+    --max_lr 0.0008 --learning_rate 0.0003
+   ```
+
+## Testing guide
+
+1. Configure the path of your testing workload in `Transfer_Active_job.py` (line 44):
+   ```python
+   sql_directory = "/your/path/here"  # Update this path to where you wish for the checkpoints to be saved
+   ```
+
+2. Run the training script:
+   ```bash
+   python3 Transfer_Active_job.py
+   ```
+
 ---
 
 # BASE: Bridging the Gap between Cost and Latency for Query Optimization
