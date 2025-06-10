@@ -23,7 +23,7 @@
 
 ## Testing guide
 
-1. Configure the path of your testing workload in `Transfer_Active_job.py` (line 44):
+1. Configure the path of your testing workload in `Transfer_Active_job.py` (line 34):
    ```python
    sql_directory = "/your/path/here"  # Update this path to where your testing workload is
    ```
