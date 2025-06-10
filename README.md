@@ -25,7 +25,7 @@
 
 1. Configure the path of your testing workload in `Transfer_Active_job.py` (line 44):
    ```python
-   sql_directory = "/your/path/here"  # Update this path to where you wish for the checkpoints to be saved
+   sql_directory = "/your/path/here"  # Update this path to where your testing workload is
    ```
 
 2. Run the training script:
