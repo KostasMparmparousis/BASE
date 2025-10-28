@@ -216,7 +216,12 @@ if __name__ == '__main__':
             tcnn.DynamicPooling_Min(),
             tcnn.RegNorm(128)
         )
-    checkpoint = torch.load('/data/hdd1/users/kmparmp/BASE/Models/now.pth', map_location=torch.device('cpu'))
+    from pathlib import Path
+    REPO_ROOT = Path(__file__).resolve()
+    while REPO_ROOT.name != "Learned-Optimizers-Benchmarking-Suite" and REPO_ROOT.parent != REPO_ROOT:
+        REPO_ROOT = REPO_ROOT.parent
+    BASE_LQO_DIR = REPO_ROOT / 'optimizers' / 'BASE'
+    checkpoint = torch.load(f'{BASE_LQO_DIR}/Models/now.pth', map_location=torch.device('cpu'))
 
     # model_dict = model.state_dict()
     # # print(model_dict.keys())

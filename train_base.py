@@ -31,6 +31,11 @@ from tqdm import tqdm
 import os
 from sklearn.model_selection import train_test_split
 from torch.distributions import Categorical
+from pathlib import Path
+REPO_ROOT = Path(__file__).resolve()
+while REPO_ROOT.name != "Learned-Optimizers-Benchmarking-Suite" and REPO_ROOT.parent != REPO_ROOT:
+    REPO_ROOT = REPO_ROOT.parent
+WORKLOADS_DIR = REPO_ROOT / "workloads" / "imdb_pg_dataset" / "job"
 
 # Perform train/test split (e.g., 80% train, 20% test)
 def read_sql_files(directory):
@@ -41,7 +46,7 @@ def read_sql_files(directory):
                 sql_files.append(f.read())
     return sql_files
 
-sql_directory = '/data/hdd1/users/kmparmp/workloads/job'
+sql_directory = WORKLOADS_DIR
 sql_files = read_sql_files(sql_directory)
 train_files, test_files = train_test_split(sql_files, test_size=0.2, random_state=42)
 

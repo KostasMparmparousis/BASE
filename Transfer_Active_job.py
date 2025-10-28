@@ -31,7 +31,11 @@ def read_sql_files(directory):
                 sql_files.append(f.read())
     return sql_files
 
-sql_directory = '/data/hdd1/users/kmparmp/workloads/job'
+from pathlib import Path
+REPO_ROOT = Path(__file__).resolve()
+while REPO_ROOT.name != "Learned-Optimizers-Benchmarking-Suite" and REPO_ROOT.parent != REPO_ROOT:
+    REPO_ROOT = REPO_ROOT.parent
+sql_directory = REPO_ROOT / "workloads" / "imdb_pg_dataset" / "job"
 sql_files = read_sql_files(sql_directory)
 train_files, test_files = train_test_split(sql_files, test_size=0.2, random_state=42)
 
@@ -928,15 +932,20 @@ def latency_test(model, job=False):
 
 
     def execute(idx, sql, job):
+        from pathlib import Path
+        REPO_ROOT = Path(__file__).resolve()
+        while REPO_ROOT.name != "Learned-Optimizers-Benchmarking-Suite" and REPO_ROOT.parent != REPO_ROOT:
+            REPO_ROOT = REPO_ROOT.parent
+        BASE_LQO_DIR = REPO_ROOT / "optimizers" / "BASE"
         terminate_plan = get_hint_SQL_explain(sql,
                                               ' EXPLAIN (ANALYZE,Buffers,TIMING,COSTS,VERBOSE,format json)',
                                               str(11),
                                               conn.conn)
         print(idx, ' Latency:', terminate_plan['Execution Time'])
         if not job:
-            save_path_2 = '/data/hdd1/users/kmparmp/BASE/test_sql/executed_sql_plan/test_train_1'
+            save_path_2 = str(BASE_LQO_DIR) + '/test_sql/executed_sql_plan/test_1/'
         else:
-            save_path_2 = '/data/hdd1/users/kmparmp/BASE/test_sql/executed_sql_plan/test_1'
+            save_path_2 = str(BASE_LQO_DIR) + '/test_sql/executed_sql_plan/job_1/'
         with open(save_path_2 + str(idx) + '.json', 'w') as file_obj:
             json.dump(terminate_plan, file_obj)
 

@@ -187,5 +187,7 @@ dependencies:
   - yaml=0.2.5
   - zlib=1.2.13
   - pip:
+      - dotenv==0.9.9
+      - pathlib==1.0.1
+      - python-dotenv==1.2.1
       - sql-metadata==2.15.0
-prefix: /data/hdd1/users/kmparmp/miniconda3/envs/base_opt
