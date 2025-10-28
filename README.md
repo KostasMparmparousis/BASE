@@ -1,66 +1,87 @@
-## Setup Environment
-1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) if not already installed.
-2. Create and activate the environment:
-   ```bash
-   conda env create -f environment.yml
-   conda activate base
-   ```
+# BASE Optimizer
 
-## Training Guide
+This directory contains the implementation of BASE, a two-stage reinforcement learning framework that bridges the gap between cost-model-based and latency-based training for query optimization.
 
-1. Configure the path of your training workload in `train_base.py` (line 44):
-   ```python
-   sql_directory = "/your/path/here"  # Update this path to where you wish for the checkpoints to be saved
-   ```
+This guide provides instructions for using BASE within the evaluation suite.
 
-2. Run the training script:
-   ```bash
-   python3 train_base.py --path ./Models/now.pth --epoch_start 1 \
-   --epoch_end 100 --epsilon_decay 0.95 \--epsilon_end 0.02 --capacity 60000 \
-    --batch_size 512 --sync_batch_size 50 --steps_per_epoch 1000 \ 
-    --max_lr 0.0008 --learning_rate 0.0003
-   ```
+### Prerequisites
 
-## Testing guide
-
-1. Configure the path of your testing workload in `Transfer_Active_job.py` (line 34):
-   ```python
-   sql_directory = "/your/path/here"  # Update this path to where your testing workload is
-   ```
-
-2. Run the training script:
-   ```bash
-   python3 Transfer_Active_job.py
-   ```
+1.  The main Docker environment for the evaluation suite must be built and running.
+2.  You have a Conda installation (e.g., [Miniconda](https://docs.conda.io/en/latest/miniconda.html)).
 
 ---
 
-# BASE: Bridging the Gap between Cost and Latency for Query Optimization
+## 1. Environment Setup
 
-BASE is a two-stage RL-based framework that bridges the gap between cost and latency for training a learned query optimizer efficiently. For more details, check out the VLDB 2023 paper: [BASE: Bridging the Gap between Cost and Latency for Query Optimization.](https://www.vldb.org/pvldb/vol16/p1958-chen.pdf)
+All BASE commands must be run from a dedicated Conda environment.
 
-## Dataset
+1.  **Create and activate the Conda environment:**
+    ```bash
+    conda env create -f environment.yml
+    conda activate base
+    ```
 
-The pre-training queries for IMDB are available at this [link](https://drive.google.com/drive/folders/16Dguw7xDWR19K_B7ZPUscfdCRg5r5mQ4?usp=drive_link).
+---
 
-## Usage
+## 2. General Usage
 
-BASE is a two stage training framework for learned query optimizer:  
+BASE uses a two-stage approach. First, a model is pre-trained using the PostgreSQL cost model. Second, this model is fine-tuned using actual query execution latencies.
 
-* First stage: policy pretraining with cost from PostgreSQL cost model.
+**Important Note:** The paths for the training and testing workloads are **hardcoded** in the Python scripts. You must edit these files before running.
 
-```bash
-python -u RLGOOTest_NEW.py --path ./Models/now.pth --epoch_start 1 --epoch_end 100 --epsilon_decay 0.95 --epsilon_end 0.02 --capacity 60000 --batch_size 512 --sync_batch_size 50 --steps_per_epoch 1000 --max_lr 0.0008 --learning_rate 0.0003 > log_NEW.txt 2>&1
-```
+### Stage 1: Pre-training (Cost-based)
 
-* Second stage (starting from the first stage): latency finetuning with latency from actual execution. 
+1.  **Edit `train_base.py`:** Open `train_base.py` and modify the `sql_directory` variable on line 44 to point to your training workload.
+    ```python
+    # in train_base.py
+    sql_directory = "/path/to/training/workload/"
+    ```
+2.  **Run the pre-training script:**
+    ```bash
+    python3 train_base.py --path <path/to/save/model.pth> --epoch_end <num_epochs> [other_hyperparameters...]
+    ```
+    *   `--path`: Specifies the file path to save the final pre-trained model.
+    *   `--epoch_end`: The number of epochs to train for.
 
-```bash
-python Transfer_Active.py
-```
+### Stage 2: Fine-tuning & Evaluation (Latency-based)
 
+1.  **Edit `Transfer_Active_job.py`:** Open `Transfer_Active_job.py` and modify the `sql_directory` variable on line 34 to point to your testing/evaluation workload.
+    ```python
+    # in Transfer_Active_job.py
+    sql_directory = "/path/to/testing/workload/"
+    ```
+2.  **Run the fine-tuning/testing script:**
+    ```bash
+    python3 Transfer_Active_job.py
+    ```
 
+---
 
-## Contact
+## 3. Status in this Evaluation Suite: Disclaimer
 
-xuchen.2019@outlook.com
+Despite significant efforts, we were unable to get the BASE optimizer fully operational within our evaluation framework. We encountered persistent integration and execution challenges that prevented us from successfully training the model and generating stable results.
+
+Consequently:
+*   **There are no results for BASE reported in our paper.**
+*   We do not provide an `experiments.md` file with specific commands for our experimental suite (E1-E5) for this optimizer.
+
+The general usage instructions in the section above are preserved from the original authors' documentation for completeness, should other researchers wish to attempt to use this codebase.
+
+---
+
+## 4. Reference from original BASE Documentation
+
+<details>
+<summary><b>Click to expand for key concepts from the original BASE documentation.</b></summary>
+
+### The Two-Stage Framework
+
+The core idea of BASE is to leverage the speed of the PostgreSQL cost model for efficient pre-training, which quickly teaches the model the general structure of good query plans. Then, it uses latency-based fine-tuning with real query executions to adapt the model to the specific hardware and data distribution, bridging the gap between estimated cost and true latency.
+
+### Pre-training Dataset
+
+The original authors provide a specific set of pre-training queries for the IMDB (JOB) workload, which can be found at this [Google Drive link](https://drive.google.com/drive/folders/16Dguw7xDWR19K_B7ZPUscfdCRg5r5mQ4?usp=drive_link).
+
+For more details, please refer to the complete [`original_documentation.md`](original_documentation.md) file.
+
+</details>
